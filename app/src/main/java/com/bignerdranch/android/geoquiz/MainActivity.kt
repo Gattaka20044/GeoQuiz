@@ -20,6 +20,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var nextButton: Button
     private lateinit var questionTextView: TextView
 
+
+    private var questionResultCorrect: Int = 0
+    private var flagOtvet: Boolean = false
+
+
     private val questionBank = listOf(
         Question(R.string.question_australia, true),
         Question(R.string.question_ocean, true),
@@ -35,7 +40,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Log.d(TAG,"onCreate(Bundle?) called")
+        Log.d(TAG, "OnCreate")
 
         setContentView(R.layout.activity_main)
 
@@ -45,16 +50,30 @@ class MainActivity : AppCompatActivity() {
         questionTextView = findViewById(R.id.question_text_view)
 
 
+
         trueButton.setOnClickListener{
-            checkAnswer(true)
+            if (!flagOtvet){
+                checkAnswer(true)
+                flagOtvet = true
+            }
         }
 
         falseButton.setOnClickListener{
-            checkAnswer(false)
+            if (!flagOtvet){
+                checkAnswer(false)
+                flagOtvet = true
+            }
         }
 
         nextButton.setOnClickListener{
+            flagOtvet = false
+            if((currentIndex + 1) == questionBank.size){
+                Log.d(TAG, "Yes")
+                questionResult(questionResultCorrect, questionBank.size)
+                questionResultCorrect = 0
+            }
             currentIndex = (currentIndex + 1) % questionBank.size
+
             updateQuestion()
         }
 
@@ -68,37 +87,21 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkAnswer(userAnswer: Boolean){
         val correctAnswer = questionBank[currentIndex].answer
-
-        val messageResId = if (userAnswer == correctAnswer){
-            R.string.correct_toast
+        val messageResId :Int
+        if (userAnswer == correctAnswer){
+           messageResId = R.string.correct_toast
+           questionResultCorrect ++
         }else{
-            R.string.incorrect_toast
+            messageResId = R.string.incorrect_toast
         }
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
     }
 
-    override fun onStart(){
-        super.onStart()
-        Log.d(TAG,"onStart() called")
+    private fun questionResult(correct: Int, size: Int){
+        val questionResult = (correct / size.toDouble()) * 100
+        val message = "Correct answers ${"%.2f".format(questionResult)}"
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    override fun onResume(){
-        super.onResume()
-        Log.d(TAG, "onResume() called")
-    }
 
-    override fun onPause(){
-        super.onPause()
-        Log.d(TAG, "onPause() called")
-    }
-
-    override fun onStop(){
-        super.onStop()
-        Log.d(TAG, "onStop")
-    }
-
-    override fun onDestroy(){
-        super.onDestroy()
-        Log.d(TAG, "onDestroy() called")
-    }
 }
